@@ -104,7 +104,7 @@ userSchema.methods.can = function(action) {
       'analytics:view', 'settings:edit'
     ],
     editor: [
-      'post:create', 'post:edit', 'post:publish', 'post:review', 'post:schedule',
+      'post:create', 'post:edit', 'post:publish', 'post:delete', 'post:review', 'post:schedule',
       'user:view',
       'media:upload', 'media:view',
       'analytics:view'

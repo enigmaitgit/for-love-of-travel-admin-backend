@@ -14,6 +14,7 @@ const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
 const commentRoutes = require('./routes/comments');
 const mediaRoutes = require('./routes/media');
+const categoryRoutes = require('./routes/categories');
 const authRoutes = require('./routes/auth');
 
 // Import middleware
@@ -79,6 +80,7 @@ app.use('/api/v1/posts', postRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/comments', commentRoutes);
 app.use('/api/v1/media', mediaRoutes);
+app.use('/api/v1/categories', categoryRoutes);
 
 // API documentation endpoint
 app.get('/api/v1', (req, res) => {
@@ -90,7 +92,8 @@ app.get('/api/v1', (req, res) => {
       posts: '/api/v1/posts',
       users: '/api/v1/users',
       comments: '/api/v1/comments',
-      media: '/api/v1/media'
+      media: '/api/v1/media',
+      categories: '/api/v1/categories'
     },
     documentation: 'https://github.com/your-repo/docs'
   });
