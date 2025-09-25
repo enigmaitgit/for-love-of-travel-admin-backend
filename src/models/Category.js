@@ -186,3 +186,4 @@ categorySchema.methods.updatePostCount = async function() {
 };
 
 module.exports = mongoose.model('Category', categorySchema);
+

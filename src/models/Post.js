@@ -207,6 +207,17 @@ const postSchema = new mongoose.Schema({
   scheduledAt: {
     type: Date
   },
+  // Main website upload tracking
+  uploadedToMainAt: {
+    type: Date
+  },
+  uploadedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  mainWebsiteId: {
+    type: String // ID of the post on the main website
+  },
   seo: {
     metaTitle: String,
     metaDescription: String,

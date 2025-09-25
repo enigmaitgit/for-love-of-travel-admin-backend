@@ -3,12 +3,14 @@ const { body, param, query } = require('express-validator');
 const {
   getPosts,
   getPost,
+  getPostBySlug,
   createPost,
   updatePost,
   deletePost,
   bulkUpdatePosts,
   getPostStats,
-  getPopularPosts
+  getPopularPosts,
+  uploadPostToMain
 } = require('../controllers/postController');
 const { protect, can } = require('../middleware/auth');
 
@@ -23,6 +25,11 @@ router.get('/', getPosts);
 // @route   GET /api/v1/posts/:id
 // @access  Public
 router.get('/:id', getPost);
+
+// @desc    Get public post by slug
+// @route   GET /api/v1/posts/slug/:slug
+// @access  Public
+router.get('/slug/:slug', getPostBySlug);
 
 // @desc    Get popular posts
 // @route   GET /api/v1/posts/popular
@@ -103,5 +110,14 @@ router.patch('/bulk', [
   body('action').isIn(['changeStatus', 'delete']).withMessage('Invalid action'),
   body('status').optional().isIn(['draft', 'review', 'scheduled', 'published', 'archived']).withMessage('Invalid status')
 ], bulkUpdatePosts);
+
+// @desc    Upload post to main website
+// @route   POST /api/v1/posts/:id/upload-to-main
+// @access  Private (Editor+)
+router.post('/:id/upload-to-main', [
+  protect,
+  can('post:publish'),
+  param('id').isMongoId().withMessage('Invalid post ID')
+], uploadPostToMain);
 
 module.exports = router;

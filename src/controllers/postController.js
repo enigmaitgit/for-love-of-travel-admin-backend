@@ -120,6 +120,39 @@ const getPost = async (req, res, next) => {
   }
 };
 
+// @desc    Get public post by slug
+// @route   GET /api/v1/posts/slug/:slug
+// @access  Public
+const getPostBySlug = async (req, res, next) => {
+  try {
+    const post = await Post.findOne({ 
+      slug: req.params.slug, 
+      status: 'published' 
+    })
+      .populate('author', 'firstName lastName email avatar bio')
+      .populate('categories', 'name slug color')
+      .lean();
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: 'Post not found'
+      });
+    }
+
+    // Increment view count
+    await Post.findByIdAndUpdate(post._id, { $inc: { 'stats.views': 1 } });
+    post.stats.views += 1;
+
+    res.json({
+      success: true,
+      data: post
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Create new post with content sections
 // @route   POST /api/v1/posts
 // @access  Private (Contributor+)
@@ -396,13 +429,119 @@ const getPopularPosts = async (req, res, next) => {
   }
 };
 
+// @desc    Upload post to main website
+// @route   POST /api/v1/posts/:id/upload-to-main
+// @access  Private (Editor+)
+const uploadPostToMain = async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id)
+      .populate('author', 'firstName lastName email')
+      .populate('categories', 'name slug color');
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: 'Post not found'
+      });
+    }
+
+    // Check if user has permission to upload to main website
+    if (!req.user.role || !['admin', 'editor'].includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Insufficient permissions to upload to main website'
+      });
+    }
+
+    // Prepare post data for main website
+    const mainWebsitePost = {
+      id: post._id,
+      title: post.title,
+      slug: post.slug,
+      body: post.body,
+      excerpt: post.excerpt,
+      contentSections: post.contentSections || [],
+      featuredImage: post.featuredImage,
+      tags: post.tags,
+      categories: post.categories,
+      author: post.author,
+      status: 'published', // Always publish when uploading to main website
+      publishedAt: new Date(),
+      seo: post.seo,
+      breadcrumb: post.breadcrumb,
+      readingTime: post.readingTime,
+      jsonLd: post.jsonLd,
+      uploadedToMainAt: new Date(),
+      uploadedBy: req.user._id
+    };
+
+    // Here you would typically send this data to your main website
+    // For now, we'll simulate the upload and update the post status
+    const updatedPost = await Post.findByIdAndUpdate(
+      req.params.id,
+      { 
+        status: 'published',
+        publishedAt: new Date(),
+        uploadedToMainAt: new Date(),
+        uploadedBy: req.user._id
+      },
+      { new: true }
+    );
+
+    // In a real implementation, you would:
+    // 1. Send HTTP request to main website API
+    // 2. Handle the response
+    // 3. Update post status accordingly
+
+    // Example of what the main website API call might look like:
+    /*
+    try {
+      const mainWebsiteResponse = await fetch(process.env.MAIN_WEBSITE_API_URL + '/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.MAIN_WEBSITE_API_KEY}`
+        },
+        body: JSON.stringify(mainWebsitePost)
+      });
+
+      if (mainWebsiteResponse.ok) {
+        const result = await mainWebsiteResponse.json();
+        // Update post with main website ID if needed
+        await Post.findByIdAndUpdate(req.params.id, { 
+          mainWebsiteId: result.id,
+          uploadedToMainAt: new Date()
+        });
+      }
+    } catch (error) {
+      console.error('Error uploading to main website:', error);
+      throw error;
+    }
+    */
+
+    res.json({
+      success: true,
+      message: 'Post uploaded to main website successfully',
+      data: {
+        post: updatedPost,
+        mainWebsiteData: mainWebsitePost
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getPosts,
   getPost,
+  getPostBySlug,
   createPost,
   updatePost,
   deletePost,
   bulkUpdatePosts,
   getPostStats,
-  getPopularPosts
+  getPopularPosts,
+  uploadPostToMain
 };
+

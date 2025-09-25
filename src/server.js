@@ -16,6 +16,9 @@ const commentRoutes = require('./routes/comments');
 const mediaRoutes = require('./routes/media');
 const categoryRoutes = require('./routes/categories');
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
+const publicRoutes = require('./routes/public');
+const revalidateRoutes = require('./routes/revalidate');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -81,6 +84,15 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/comments', commentRoutes);
 app.use('/api/v1/media', mediaRoutes);
 app.use('/api/v1/categories', categoryRoutes);
+
+// Admin routes
+app.use('/api/admin', adminRoutes);
+
+// Public routes
+app.use('/api', publicRoutes);
+
+// Revalidation webhook
+app.use('/api/revalidate', revalidateRoutes);
 
 // API documentation endpoint
 app.get('/api/v1', (req, res) => {

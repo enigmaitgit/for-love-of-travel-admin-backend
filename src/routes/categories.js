@@ -106,3 +106,4 @@ router.patch('/reorder', [
 ], reorderCategories);
 
 module.exports = router;
+
